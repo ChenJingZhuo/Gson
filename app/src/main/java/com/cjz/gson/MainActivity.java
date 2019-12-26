@@ -21,6 +21,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -38,6 +39,9 @@ import interfaces.heweather.com.interfacesmodule.bean.weather.now.Now;
 import interfaces.heweather.com.interfacesmodule.bean.weather.now.NowBase;
 import interfaces.heweather.com.interfacesmodule.view.HeConfig;
 import interfaces.heweather.com.interfacesmodule.view.HeWeather;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -123,7 +127,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         new Thread() {
             @Override
             public void run() {
+
+                OkHttpClient client = new OkHttpClient().newBuilder()
+                        .build();
+                Request request = new Request.Builder()
+                        .url("http://guolin.tech/api/china/")
+                        .method("GET", null)
+                        .build();
                 try {
+                    Response response = client.newCall(request).execute();
+                    JSONArray provinceArray = new JSONArray(response.body().string());
+                    for (int i = 0; i < provinceArray.length(); i++) {
+                        JSONObject provinceInfo = provinceArray.getJSONObject(i);//获取每个省份信息
+                        Province provinceBean = new Province();//创建省份实体类对象
+                        Gson gson = new Gson();//创建Gson解析对象
+
+                        //反序例化，将json数据转化为实体类对象的成员变量值
+                        provinceBean = gson.fromJson(provinceInfo.toString(), Province.class);
+                        //添加保存好的省份对象数据进入省份集合
+                        provinceList.add(provinceBean);
+                    }
+
+
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                /*try {
                     //weatherCountry = "http://guolin.tech/api/china/"
                     URL url = new URL(weatherCountry);
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();//开启一个url的连接，用HttpURLConnection连接方式处理
@@ -245,85 +276,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                     //拼接字符串
                     String weatherApi = String.format(weatherUrl, cityId, key);
-
                     Log.d("WeatherApi", "" + weatherApi);
-
                     queryWeather2();
-
-                    /*url = new URL(weatherApi);
-                    connection = (HttpURLConnection) url.openConnection();//开启一个url的连接用HttpURLConnection连接方式处理
-                    connection.setRequestMethod("GET");//设置连接对象的请求数据的方式
-                    connection.setConnectTimeout(3000);//设置连接对象的请求超时的时间
-
-                    //用字节输入流接收请求返回的数据流
-                    is = connection.getInputStream();
-                    //将字节输入流对象转换成字符输入流对象
-                    isr = new InputStreamReader(is);
-                    br = new BufferedReader(isr);
-
-                    StringBuffer sb4 = new StringBuffer();
-                    //读文本
-                    while ((string = br.readLine()) != null) {
-                        sb4.append(string);
-                    }
-
-                    is.close();
-                    isr.close();
-                    br.close();
-
-                    String result4 = sb4.toString();
-
-                    Log.d("MainActivity4", "" + result4);*/
-
-                    /*JSONObject jsonObject = new JSONObject(result4);
-                    JSONArray HeWeather = jsonObject.getJSONArray("HeWeather");
-                    JSONObject HeWeather2=HeWeather.getJSONObject(0);
-
-                    JSONObject basic = HeWeather2.getJSONObject("basic");
-                    JSONObject update = HeWeather2.getJSONObject("update");
-                    String status = HeWeather2.getString("status");
-                    JSONObject now = HeWeather2.getJSONObject("now");
-                    JSONArray daily_forecast = HeWeather2.getJSONArray("daily_forecast");
-                    JSONObject aqi = HeWeather2.getJSONObject("aqi");
-                    JSONObject suggestion = HeWeather2.getJSONObject("suggestion");
-                    String msg = HeWeather2.getString("msg");
-
-
-                    JSONObject comf=suggestion.getJSONObject("comf");
-                    JSONObject sport=suggestion.getJSONObject("sport");
-                    JSONObject cw=suggestion.getJSONObject("cw");
-
-                    if (status.equals("ok")) {
-                        String city = basic.getString("city");
-                        mCityWeather.setText(city + "的天气");
-
-                        String cond_txt = now.getString("cond_txt");
-                        String wind_dir = now.getString("wind_dir");
-                        String fl = now.getString("fl");
-                        mWeather.setText(cond_txt + ", " + wind_dir + ", 当前气温：" + fl + "℃");
-
-                        String hum = now.getString("hum");
-                        mShidu.setText(hum + "%");
-
-//                        String brf=comf.getString("brf");
-                        String txt=comf.getString("txt");
-                        String txt2=sport.getString("txt");
-                        String txt3=cw.getString("txt");
-
-                        mSuggestion.setText("舒适度："+txt+"\n"+
-                                "运动建议："+txt2+"\n" +
-                                "洗车指数："+txt3+"\n");
-
-                        Message message=new Message();
-                        message.what=1;
-                        MainActivity.this.myHandler.sendMessage(message);
-
-                    }*/
                 } catch (Exception e) {
                     e.printStackTrace();
-                }
+                }*/
+
             }
         }.start();
+
     }
 
     public void queryWeather2(){

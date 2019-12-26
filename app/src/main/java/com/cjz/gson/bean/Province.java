@@ -1,6 +1,12 @@
 package com.cjz.gson.bean;
 
 public class Province {
+
+    /**
+     * id : 23
+     * name : 广东
+     */
+
     private int id;
     private String name;
 
